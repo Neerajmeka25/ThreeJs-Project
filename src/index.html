@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environment maps</title>
+    <link rel="stylesheet" href="./style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #080814;
+        }
+
+        canvas {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        #header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 18px 24px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        #title {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: #5ee7df;
+        }
+
+        #subtitle {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.35);
+            margin-top: 3px;
+        }
+
+        #badge-row {
+            position: fixed;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .badge {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border: 1px solid rgba(94, 231, 223, 0.2);
+            border-radius: 20px;
+            background: rgba(8, 8, 20, 0.7);
+            color: rgba(94, 231, 223, 0.7);
+        }
+
+        #tips {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(8, 8, 20, 0.75);
+            border: 1px solid rgba(94, 231, 223, 0.15);
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 1px;
+            line-height: 2;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        #tips .k {
+            color: #5ee7df;
+        }
+
+        #obj-count {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: rgba(94, 231, 223, 0.5);
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* lil-gui theme */
+        .lil-gui {
+            --background-color: rgba(6, 6, 18, 0.93) !important;
+            --text-color: #d0d0e8 !important;
+            --title-background-color: rgba(94, 231, 223, 0.12) !important;
+            --title-text-color: #5ee7df !important;
+            --widget-color: rgba(255, 255, 255, 0.06) !important;
+            --hover-color: rgba(94, 231, 223, 0.12) !important;
+            --focus-color: #5ee7df !important;
+            --number-color: #ffb347 !important;
+            --string-color: #5ee7df !important;
+            --font-size: 11px !important;
+            --input-font-size: 11px !important;
+            --font-family: 'Space Mono', monospace !important;
+            --folder-indent: 10px !important;
+            border: 1px solid rgba(94, 231, 223, 0.1) !important;
+            border-radius: 10px !important;
+            overflow: hidden !important;
+        }
+
+        .lil-gui .title {
+            font-weight: 700 !important;
+            letter-spacing: 1px !important;
+        }
+
+        .lil-gui .controller.color .display {
+            border-radius: 3px !important;
+        }
+
+        #control-guide {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(8, 8, 20, 0.85);
+            border: 1px solid rgba(94, 231, 223, 0.2);
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            z-index: 100;
+        }
+
+        #guide-title {
+            color: #5ee7df;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="header">
+        <div id="title">Three.js Explorer</div>
+        <div id="subtitle">Interactive Concepts Dashboard</div>
+    </div>
+    <div id="control-guide">
+        <div id="guide-title">🎮 ORBIT CONTROLS</div>
+        <div id="guide-content"></div>
+    </div>
+    <div id="badge-row">
+        <div class="badge">📷 Camera</div>
+        <div class="badge">💡 Lights</div>
+        <div class="badge">📦 Meshes</div>
+        <div class="badge">🎨 Materials</div>
+        <div class="badge">🌒 Shadows</div>
+    </div>
+    <div id="tips">
+        <div><span class="k">LEFT DRAG</span> — Orbit camera</div>
+        <div><span class="k">SCROLL</span> — Zoom in/out</div>
+        <div><span class="k">RIGHT DRAG</span>— Pan scene</div>
+        <div><span class="k">GUI →</span> — Change everything</div>
+    </div>
+    <div id="obj-count">OBJECTS: <span id="count">1</span></div>
+
+    <script type="module" src="./script.js"></script>
+</body>
+
+</html>
